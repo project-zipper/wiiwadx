@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Index of C://</title>
+<style>
+    body {
+        font-family: Consolas, monospace;
+        background: white;
+        padding: 20px;
+    }
+
+    h1 {
+        font-weight: normal;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .file {
+        padding: 6px;
+    }
+
+    .file:hover {
+        background: #e8f0fe;
+    }
+
+    a {
+        color: #1a73e8;
+        text-decoration: none;
+    }
+</style>
+</head>
+<body>
+
+<h1>Index of WiiWadx</h1>
+<div id="files">Loading...</div>
+
+<script>
+const username = "project_zippwe";
+const repo = "wiiwadx";
+const path = "wads"; // leave "" if root
+
+const apiURL = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+
+fetch(apiURL)
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("files");
+        container.innerHTML = "";
+
+        data.forEach(file => {
+            const div = document.createElement("div");
+            div.className = "file";
+
+            const link = document.createElement("a");
+            link.href = file.html_url;
+            link.textContent = file.name;
+
+            div.appendChild(link);
+            container.appendChild(div);
+        });
+    })
+    .catch(() => {
+        document.getElementById("files").innerHTML = "Could not load files.";
+    });
+</script>
+
+</body>
+</html>
