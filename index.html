@@ -1,1 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Wiiwadx</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="top-bar">
+    <h1>Wiiwadx</h1>
+</div>
+
+<div class="channel-grid" id="channelGrid">
+    <p class="loading">Loading WADs...</p>
+</div>
+
+<script>
+const username = "project-zipper";
+const repo = "wiiwadx";
+const folder = "wads";
+
+const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${folder}`;
+
+const channelGrid = document.getElementById("channelGrid");
+
+fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+        channelGrid.innerHTML = "";
+
+        const wadFiles = data.filter(file => file.name.toLowerCase().endsWith(".wad"));
+
+        if (wadFiles.length === 0) {
+            channelGrid.innerHTML = "<p class='no-files'>No .wad files found.</p>";
+            return;
+        }
+
+        wadFiles.forEach(file => {
+            const channel = document.createElement("div");
+            channel.className = "channel";
+
+            channel.innerHTML = `
+                <div class="channel-inner">
+                    <span class="icon">🎮</span>
+                    <p>${file.name}</p>
+                </div>
+            `;
+
+            channelGrid.appendChild(channel);
+        });
+    })
+    .catch(error => {
+        channelGrid.innerHTML = "<p class='no-files'>Could not load wads folder.</p>";
+        console.error(error);
+    });
+</script>
+
+</body>
+</html>
