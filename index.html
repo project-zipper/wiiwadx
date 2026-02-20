@@ -16,12 +16,12 @@
 </div>
 
 <script>
-const username = "project-zipper";
-const repo = "wiiwadx";
+const username = "YOUR_USERNAME";
+const repo = "YOUR_REPO";
+const branch = "main"; // change if your branch is different
 const folder = "wads";
 
 const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${folder}`;
-
 const channelGrid = document.getElementById("channelGrid");
 
 fetch(apiUrl)
@@ -37,6 +37,8 @@ fetch(apiUrl)
         }
 
         wadFiles.forEach(file => {
+            const downloadUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${folder}/${file.name}`;
+
             const channel = document.createElement("div");
             channel.className = "channel";
 
@@ -46,6 +48,15 @@ fetch(apiUrl)
                     <p>${file.name}</p>
                 </div>
             `;
+
+            channel.addEventListener("click", () => {
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
 
             channelGrid.appendChild(channel);
         });
