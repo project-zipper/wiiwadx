@@ -16,55 +16,72 @@
 </div>
 
 <script>
-const username = "project_zipper";
+const username = "project-zipper";
 const repo = "wiiwadx";
-const branch = "main"; // change if your branch is different
-const folder = "wads";
+const branch = "main";
+const baseFolder = "wads";
 
-const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${folder}`;
 const channelGrid = document.getElementById("channelGrid");
 
-fetch(apiUrl)
-    .then(response => response.json())
-    .then(data => {
-        channelGrid.innerHTML = "";
+// Fetch folder contents
+async function fetchFolder(path) {
+    const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+    const response = await fetch(apiUrl);
+    return response.json();
+}
 
-        const wadFiles = data.filter(file => file.name.toLowerCase().endsWith(".wad"));
+// Recursively search folders
+async function loadWads(path) {
+    const items = await fetchFolder(path);
 
-        if (wadFiles.length === 0) {
-            channelGrid.innerHTML = "<p class='no-files'>No .wad files found.</p>";
-            return;
+    if (!Array.isArray(items)) return;
+
+    for (const item of items) {
+        if (item.type === "file" && item.name.toLowerCase().endsWith(".wad")) {
+            addChannel(item.path, item.name);
         }
 
-        wadFiles.forEach(file => {
-            const downloadUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${folder}/${file.name}`;
+        if (item.type === "dir") {
+            await loadWads(item.path); // Recursive call
+        }
+    }
+}
 
-            const channel = document.createElement("div");
-            channel.className = "channel";
+// Create Wii-style channel
+function addChannel(filePath, fileName) {
+    const downloadUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${filePath}`;
 
-            channel.innerHTML = `
-                <div class="channel-inner">
-                    <span class="icon">🎮</span>
-                    <p>${file.name}</p>
-                </div>
-            `;
+    const channel = document.createElement("div");
+    channel.className = "channel";
 
-            channel.addEventListener("click", () => {
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = file.name;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            });
+    channel.innerHTML = `
+        <div class="channel-inner">
+            <span class="icon">🎮</span>
+            <p>${fileName}</p>
+        </div>
+    `;
 
-            channelGrid.appendChild(channel);
-        });
-    })
-    .catch(error => {
-        channelGrid.innerHTML = "<p class='no-files'>Could not load wads folder.</p>";
-        console.error(error);
+    channel.addEventListener("click", () => {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     });
+
+    channelGrid.appendChild(channel);
+}
+
+// Start loading
+channelGrid.innerHTML = "";
+loadWads(baseFolder).then(() => {
+    if (channelGrid.innerHTML === "") {
+        channelGrid.innerHTML = "<p class='no-files'>No .wad files found.</p>";
+    }
+}).catch(() => {
+    channelGrid.innerHTML = "<p class='no-files'>Error loading wads folder.</p>";
+});
 </script>
 
 </body>
